@@ -19,12 +19,15 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:sanctum', 'role:explorador'])->prefix('explorador')->group(function () {
     Route::get('/recipes', [ExplorerRecipeController::class, 'index']);
     Route::post('/recipes', [ExplorerRecipeController::class, 'store']);
+    Route::put('/recipes/{recipe}', [ExplorerRecipeController::class, 'update']);
+    Route::delete('/recipes/{recipe}', [ExplorerRecipeController::class, 'destroy']);
     Route::post('/recipes/{recipe}/comments', [ExplorerCommentController::class, 'store']);
     Route::post('/comments/{comment}/reports', [ExplorerReportController::class, 'store']);
 });
 
 Route::get('/recipes', [\App\Http\Controllers\Api\PublicRecipeController::class, 'index']);
 Route::get('/recipes/{recipe}', [\App\Http\Controllers\Api\PublicRecipeController::class, 'show']);
+Route::get('/recipes/{recipe}/comments', [\App\Http\Controllers\Api\PublicCommentController::class, 'index']);
 
 Route::middleware(['auth:sanctum', 'role:moderador'])->prefix('moderador')->group(function () {
     Route::get('/recipes', [ModeratorRecipeController::class, 'index']);

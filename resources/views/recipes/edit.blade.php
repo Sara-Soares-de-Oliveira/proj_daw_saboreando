@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Criar Receita')
+@section('title', 'Editar Receita')
 
 @section('content')
     <section class="hero">
         <div class="wrap">
-            <h1>Compartilhe sua Receita</h1>
+            <h1>Atualize a sua Receita</h1>
         </div>
     </section>
 
@@ -13,14 +13,16 @@
         <div class="wrap">
             <div class="panel">
                 <h2>Detalhes da Receita</h2>
-                <p style="color:var(--muted); font-size:13px;">Preencha os campos abaixo com os ingredientes e modo de preparo</p>
+                <p style="color:var(--muted); font-size:13px;">Atualize os campos e guarde as alteracoes</p>
 
-                <form method="post" action="{{ route('recipes.store') }}" enctype="multipart/form-data">
+                <form method="post" action="{{ route('recipes.update', $recipe['id']) }}" enctype="multipart/form-data">
                     @csrf
+                    @method('PUT')
+                    <input type="hidden" name="current_foto" value="{{ $recipe['foto'] }}">
                     <div class="form-grid" style="margin-top:16px;">
                         <div>
                             <label>Nome da Receita</label>
-                            <input name="titulo" type="text" placeholder="Digite o nome" />
+                            <input name="titulo" type="text" value="{{ $recipe['titulo'] }}" />
                         </div>
                         <div>
                             <label>Imagem da Receita</label>
@@ -28,28 +30,28 @@
                         </div>
                         <div>
                             <label>Descricao</label>
-                            <textarea name="descricao" placeholder="Descreva a receita"></textarea>
+                            <textarea name="descricao">{{ $recipe['descricao'] }}</textarea>
                         </div>
                         <div>
                             <label>Ingredientes</label>
-                            <textarea name="ingredientes" placeholder="Liste os ingredientes"></textarea>
+                            <textarea name="ingredientes">{{ $recipe['ingredientes'] }}</textarea>
                         </div>
                         <div>
                             <label>Modo de Preparo</label>
-                            <textarea name="modo_preparo" placeholder="Descreva o modo de preparo"></textarea>
+                            <textarea name="modo_preparo">{{ $recipe['modo_preparo'] }}</textarea>
                         </div>
                         <div>
                             <label>Nivel de Dificuldade</label>
                             <select name="dificuldade" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px;">
-                                <option value="facil">Facil</option>
-                                <option value="medio">Medio</option>
-                                <option value="dificil">Dificil</option>
+                                <option value="facil" @selected($recipe['dificuldade'] === 'facil')>Facil</option>
+                                <option value="medio" @selected($recipe['dificuldade'] === 'medio')>Medio</option>
+                                <option value="dificil" @selected($recipe['dificuldade'] === 'dificil')>Dificil</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn btn-primary">Enviar Receita</button>
+                        <button class="btn btn-primary">Guardar Alteracoes</button>
                     </div>
                 </form>
             </div>

@@ -5,12 +5,13 @@
 @section('content')
     <div>
         <h1>Mergulhe nos sabores</h1>
-        <form>
+        <form method="post" action="{{ route('auth.login.submit') }}">
+            @csrf
             <label for="email">Email</label>
-            <input id="email" type="email" placeholder="Digite o seu email" />
+            <input id="email" name="email" type="email" placeholder="Digite o seu email" />
 
             <label for="password">Palavra-passe</label>
-            <input id="password" type="password" placeholder="Digite a sua palavra-passe" />
+            <input id="password" name="password" type="password" placeholder="Digite a sua palavra-passe" />
 
             <div class="row" style="margin-bottom: 10px;">
                 <button type="button" class="btn btn-ghost wide">Explorador de Sabores</button>

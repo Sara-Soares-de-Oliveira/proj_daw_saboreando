@@ -19,18 +19,14 @@
             <h2>Nao Saem da Boca da Malta</h2>
             <p>Receitas mais populares</p>
             <div class="grid">
-                <div class="card">
-                    <div>Ervilhas com Ovos Escalfados</div>
-                    <small>Receita</small>
-                </div>
-                <div class="card">
-                    <div>Tapioca com Queijo</div>
-                    <small>Receita</small>
-                </div>
-                <div class="card">
-                    <div>Lasanha Tradicional</div>
-                    <small>Receita</small>
-                </div>
+                @forelse($popular as $recipe)
+                    <a class="card" href="{{ route('recipes.show', $recipe['id']) }}">
+                        <div>{{ $recipe['titulo'] }}</div>
+                        <small>{{ $recipe['descricao'] }}</small>
+                    </a>
+                @empty
+                    <div class="card"><div>Sem receitas</div></div>
+                @endforelse
             </div>
         </div>
     </section>

@@ -6,7 +6,7 @@
     <section class="hero">
         <div class="wrap row" style="color:#fff;">
             <div>
-                <div style="font-size:13px; opacity:.85;">Nome de utilizador</div>
+                <div style="font-size:13px; opacity:.85;">{{ $user['name'] ?? 'Utilizador' }}</div>
                 <div style="font-size:20px; font-weight:600;">Minhas Receitas</div>
             </div>
             <a class="btn btn-primary" href="/receitas/criar">Criar Receita</a>
@@ -17,14 +17,23 @@
         <div class="wrap">
             <h2>Receitas Criadas por mim</h2>
             <div class="list">
-                <div class="panel">
-                    <strong>Massa Carbonara</strong><br />
-                    <small>Receita italiana simples e cremosa.</small>
-                </div>
-                <div class="panel">
-                    <strong>Bolo de Chocolate</strong><br />
-                    <small>Chocolate rico com cobertura.</small>
-                </div>
+                @forelse($recipes as $recipe)
+                    <div class="panel">
+                        <strong>{{ $recipe['titulo'] }}</strong><br />
+                        <small>{{ $recipe['descricao'] }}</small>
+                        <div class="row" style="margin-top:10px;">
+                            <a class="btn btn-primary" href="{{ route('recipes.show', $recipe['id']) }}">Ver</a>
+                            <a class="btn" href="{{ route('recipes.edit', $recipe['id']) }}">Editar</a>
+                            <form method="post" action="{{ route('recipes.destroy', $recipe['id']) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn" style="background:#111; color:#fff;">Excluir</button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="panel">Ainda não tens receitas.</div>
+                @endforelse
             </div>
         </div>
     </section>
