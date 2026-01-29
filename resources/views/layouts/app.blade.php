@@ -189,17 +189,45 @@
             @hasSection('hide-top-search')
             @else
                 <div class="search">
-                    <input type="text" placeholder="O que queres comer hoje?" />
-                    <button class="btn btn-primary">Buscar</button>
+                    <form action="{{ route('search.results') }}" method="get" style="display:flex; gap:10px; width:100%; justify-content:center;">
+                        <input type="text" name="q" placeholder="O que queres comer hoje?" />
+                        <button class="btn btn-primary" type="submit">Buscar</button>
+                    </form>
                 </div>
             @endif
             <nav class="menu">
-                <a href="/home">Inicio</a>
-                <a href="/minhas-receitas">Minhas Receitas</a>
-                <a href="/entrar">Entrar</a>
+                @if(session('user') && (session('user.role') ?? '') === 'moderador')
+                    <a href="/moderador">Inicio</a>
+                @else
+                    <a href="/home">Inicio</a>
+                @endif
+                @if(session('user') && (session('user.role') ?? '') === 'moderador')
+                    <a href="/moderador/pendentes">Receitas Pendentes</a>
+                    <a href="/moderador/comentarios-denunciados">Comentarios Denunciados</a>
+                @else
+                    <a href="/minhas-receitas">Minhas Receitas</a>
+                @endif
+                @if(session('user'))
+                    <span>{{ session('user.name') }}</span>
+                    <form action="{{ route('auth.logout') }}" method="post" style="display:inline;">
+                        @csrf
+                        <button class="btn" style="padding:6px 12px;">Sair</button>
+                    </form>
+                @else
+                    <a href="/entrar">Entrar</a>
+                @endif
             </nav>
         </div>
     </header>
+
+    @if(session('success'))
+        <div class="wrap" style="margin-top:12px; color:#1a7f37;">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="wrap" style="margin-top:12px; color:#b42318;">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     @yield('content')
 </body>

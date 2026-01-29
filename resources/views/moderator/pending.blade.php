@@ -6,7 +6,7 @@
     <section class="hero">
         <div class="wrap row" style="color:#fff;">
             <div>
-                <div style="font-size:13px; opacity:.85;">Nome de utilizador</div>
+                <div style="font-size:13px; opacity:.85;">{{ $user['name'] ?? 'Moderador' }}</div>
                 <div style="font-size:20px; font-weight:600;">Receitas Pendentes</div>
             </div>
         </div>
@@ -15,30 +15,30 @@
     <section class="section">
         <div class="wrap">
             <div class="list">
-                <div class="panel">
-                    <div class="row" style="align-items:flex-start;">
-                        <div>
-                            <strong>Sopa de Primavera</strong><br />
-                            <small>Receita resumida com ingredientes e modo.</small>
-                        </div>
-                        <div class="row">
-                            <button class="btn btn-primary">Sim</button>
-                            <button class="btn" style="background:#111; color:#fff;">Nao</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel">
-                    <div class="row" style="align-items:flex-start;">
-                        <div>
-                            <strong>Lasanha com Camarao</strong><br />
-                            <small>Receita resumida com ingredientes e modo.</small>
-                        </div>
-                        <div class="row">
-                            <button class="btn btn-primary">Sim</button>
-                            <button class="btn" style="background:#111; color:#fff;">Nao</button>
+                @forelse($recipes as $recipe)
+                    <div class="panel">
+                        <div class="row" style="align-items:flex-start;">
+                            <div>
+                                <strong>{{ $recipe['titulo'] }}</strong><br />
+                                <small>{{ $recipe['descricao'] }}</small>
+                            </div>
+                            <div class="row">
+                                <form method="post" action="{{ route('moderator.recipes.approve', $recipe['id']) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-primary">Sim</button>
+                                </form>
+                                <form method="post" action="{{ route('moderator.recipes.reject', $recipe['id']) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn" style="background:#111; color:#fff;">Nao</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @empty
+                    <div class="panel">Sem receitas pendentes.</div>
+                @endforelse
             </div>
         </div>
     </section>

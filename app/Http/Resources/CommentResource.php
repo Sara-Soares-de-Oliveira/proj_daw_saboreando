@@ -18,6 +18,13 @@ class CommentResource extends JsonResource
             'user_id' => $this->user_id,
             'conteudo' => $this->conteudo,
             'estado' => $this->estado,
+            'user' => $this->whenLoaded('user', function () {
+                return [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                    'email' => $this->user->email,
+                ];
+            }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

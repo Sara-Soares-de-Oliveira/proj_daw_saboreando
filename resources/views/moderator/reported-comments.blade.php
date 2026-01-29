@@ -6,7 +6,7 @@
     <section class="hero">
         <div class="wrap row" style="color:#fff;">
             <div>
-                <div style="font-size:13px; opacity:.85;">Nome de utilizador</div>
+                <div style="font-size:13px; opacity:.85;">{{ $user['name'] ?? 'Moderador' }}</div>
                 <div style="font-size:20px; font-weight:600;">Comentarios Denunciados</div>
             </div>
         </div>
@@ -15,30 +15,30 @@
     <section class="section">
         <div class="wrap">
             <div class="list">
-                <div class="panel">
-                    <div class="row">
-                        <div>
-                            <strong>Joana Frade</strong><br />
-                            <small>Comentario ofensivo reportado.</small>
-                        </div>
+                @forelse($reports as $report)
+                    <div class="panel">
                         <div class="row">
-                            <button class="btn btn-primary">Manter</button>
-                            <button class="btn" style="background:#111; color:#fff;">Excluir</button>
+                            <div>
+                                <strong>{{ $report['reporter']['name'] ?? 'Utilizador' }}</strong><br />
+                                <small>{{ $report['motivo'] ?? '' }}</small>
+                            </div>
+                            <div class="row">
+                                <form method="post" action="{{ route('moderator.comments.keep', $report['comment_id']) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn btn-primary">Manter</button>
+                                </form>
+                                <form method="post" action="{{ route('moderator.comments.remove', $report['comment_id']) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="btn" style="background:#111; color:#fff;">Excluir</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="panel">
-                    <div class="row">
-                        <div>
-                            <strong>Tiago Mota</strong><br />
-                            <small>Comentario inadequado reportado.</small>
-                        </div>
-                        <div class="row">
-                            <button class="btn btn-primary">Manter</button>
-                            <button class="btn" style="background:#111; color:#fff;">Excluir</button>
-                        </div>
-                    </div>
-                </div>
+                @empty
+                    <div class="panel">Sem comentarios denunciados.</div>
+                @endforelse
             </div>
         </div>
     </section>
