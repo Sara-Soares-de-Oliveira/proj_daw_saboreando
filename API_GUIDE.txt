@@ -1,0 +1,178 @@
+﻿SABOREANDO - GUIA DA API (REST)
+===============================
+
+Resumo
+------
+Esta API REST foi criada em Laravel 12 para a plataforma Saboreando.
+Autenticação feita com Sanctum (tokens). Existem rotas públicas e rotas protegidas
+por perfil (explorador / moderador).
+
+Requisitos
+----------
+- PHP 8.2+
+- Composer
+- MySQL (XAMPP ou outro)
+- Laravel 12
+- Postman (para testes)
+
+Instalação (local)
+------------------
+1) Instalar dependências
+   composer install
+
+2) Copiar .env e configurar DB
+   copy .env.example .env
+   (editar no .env)
+   APP_ENV=local
+   APP_DEBUG=true
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=saboreando
+   DB_USERNAME=root
+   DB_PASSWORD=
+
+3) Gerar APP_KEY
+   php artisan key:generate
+
+4) Instalar Sanctum
+   composer require laravel/sanctum
+
+5) Publicar/instalar suporte API (Laravel 12)
+   php artisan install:api
+   (Se aparecer "API routes file already exists", ignorar. As rotas já existem.)
+
+6) Criar base de dados no MySQL
+   Criar database "saboreando" no phpMyAdmin.
+
+7) Migrar
+   php artisan migrate
+
+8) Iniciar servidor
+   php artisan serve
+
+Autenticação (Sanctum)
+----------------------
+- O login/register devolve um token.
+- Para rotas protegidas usar header:
+  Authorization: Bearer <TOKEN>
+
+Endpoints
+---------
+Autenticação:
+- POST /api/auth/register
+  Body:
+  {"name":"...","email":"...","password":"..."}
+  Resposta: token + user
+
+- POST /api/auth/login
+  Body:
+  {"email":"...","password":"..."}
+  Resposta: token + user
+
+- POST /api/auth/logout (auth)
+  Header: Authorization: Bearer <TOKEN>
+
+Explorador (auth + role=explorador):
+- GET /api/explorador/recipes
+  Lista receitas do próprio explorador
+
+- POST /api/explorador/recipes
+  Body:
+  {
+    "titulo": "...",
+    "descricao": "...",
+    "ingredientes": "...",
+    "modo_preparo": "...",
+    "dificuldade": "facil|medio|dificil",
+    "foto": null
+  }
+  Cria receita com estado "pendente"
+
+- POST /api/explorador/recipes/{id}/comments
+  Body:
+  {"conteudo":"..."}
+  Só funciona se a receita estiver aprovada
+
+- POST /api/explorador/comments/{id}/reports
+  Body:
+  {"motivo":"..."}
+  Denuncia comentário ativo
+
+Moderador (auth + role=moderador):
+- GET /api/moderador/recipes?estado=pendente|aprovado|rejeitado
+
+- PATCH /api/moderador/recipes/{id}/approve
+  Aprova receita
+
+- PATCH /api/moderador/recipes/{id}/reject
+  Rejeita receita
+
+- GET /api/moderador/reports
+  Lista denúncias
+
+- PATCH /api/moderador/comments/{id}/remove
+  Remove comentário
+
+- PATCH /api/moderador/comments/{id}/keep
+  Mantém comentário
+
+Métricas:
+- GET /api/metrics/explorador (auth + role=explorador)
+- GET /api/metrics/moderador (auth + role=moderador)
+
+Público (sem token):
+- GET /api/recipes
+  Lista receitas aprovadas
+
+- GET /api/recipes/{id}
+  Mostra receita aprovada
+
+Testes rápidos (Postman)
+------------------------
+1) Registar explorador
+   POST http://127.0.0.1:8000/api/auth/register
+   Body:
+   {"name":"Amanda","email":"amanda@test.com","password":"secret123"}
+   -> guardar token
+
+2) Criar receita (explorador)
+   POST http://127.0.0.1:8000/api/explorador/recipes
+   Header: Authorization: Bearer <TOKEN_EXPLORADOR>
+   Body: (ver acima)
+
+3) Criar moderador (via tinker)
+   php artisan tinker --execute="\App\Models\User::create(['name'=>'Moderador','email'=>'moderador@test.com','password'=>\Illuminate\Support\Facades\Hash::make('secret123'),'role'=>'moderador']);"
+
+4) Login moderador
+   POST http://127.0.0.1:8000/api/auth/login
+   Body:
+   {"email":"moderador@test.com","password":"secret123"}
+   -> guardar token
+
+5) Aprovar receita
+   GET http://127.0.0.1:8000/api/moderador/recipes?estado=pendente
+   (ver id)
+   PATCH http://127.0.0.1:8000/api/moderador/recipes/{id}/approve
+   Header: Authorization: Bearer <TOKEN_MODERADOR>
+
+6) Criar comentário (explorador)
+   POST http://127.0.0.1:8000/api/explorador/recipes/{id}/comments
+   Header: Authorization: Bearer <TOKEN_EXPLORADOR>
+   Body: {"conteudo":"Muito boa!"}
+
+7) Denunciar comentário (explorador)
+   POST http://127.0.0.1:8000/api/explorador/comments/{comment_id}/reports
+   Header: Authorization: Bearer <TOKEN_EXPLORADOR>
+   Body: {"motivo":"Spam"}
+
+8) Moderador vê denúncias e remove comentário
+   GET http://127.0.0.1:8000/api/moderador/reports
+   PATCH http://127.0.0.1:8000/api/moderador/comments/{comment_id}/remove
+
+Observações
+-----------
+- Se aparecer "APPLICATION IN PRODUCTION" no migrate, confirma APP_ENV=local.
+- Se receberes 404 HTML, verifica se estás a usar o método correto e o prefixo /api.
+- Token errado não dá 404; dá 401/403.
+
