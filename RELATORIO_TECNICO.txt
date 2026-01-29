@@ -1,0 +1,92 @@
+RELATORIO TECNICO - PROJETO "Saboreando"
+
+Resumo
+Este documento descreve, de forma academica, as decisoes e implementacoes realizadas no projeto Saboreando, com foco em modelacao de dados, migracoes, modelos Eloquent, seeds e vistas Blade. As alteracoes visaram alinhar o sistema aos requisitos funcionais e aos wireframes fornecidos, mantendo boas praticas de desenvolvimento em Laravel.
+
+1. Modelacao da base de dados e migracoes
+1.1 Tabela users
+Foi ajustada a tabela users para suportar autenticacao e controlo de perfis. Os campos definidos foram:
+- id, name, email, password
+- role (explorador/moderador)
+- timestamps
+A password permanece encriptada pelo mecanismo nativo do Laravel (cast "password" => hashed), garantindo seguranca na persistencia dos dados. O campo role permite distinguir o utilizador explorador do moderador, exigencia funcional do sistema.
+
+1.2 Tabelas operacionais
+Foram adicionadas tabelas essenciais para suportar os casos de uso principais:
+- recipes: receitas criadas pelos utilizadores
+- comments: comentarios associados a receitas (recipe_id, user_id, conteudo, estado)
+- reports: denuncias de comentarios (comment_id, user_id, motivo)
+Estas tabelas viabilizam a criacao de receitas, a interacao via comentarios e a denuncia de conteudos, seguindo a logica funcional do dominio.
+
+1.3 Tabelas de analise de dados
+Foram criadas tabelas analiticas para recolher informacao sobre uso da plataforma:
+- user_activities: registo de accoes do utilizador (action_type, user_id, recipe_id opcional)
+- recipe_views: tempo de visualizacao de receitas (view_start, view_end, duration_seconds)
+- login_sessions: tempo total de sessao do utilizador (login_at, logout_at, duration_seconds)
+Estas tabelas permitem medir utilizadores ativos, cliques, horarios de pico e diferenciar contribuidores de observadores, suportando analises de comportamento e uso.
+
+2. Modelos Eloquent e relacoes
+Os modelos foram criados e atualizados de acordo com o material "Laravel Base Dados, Migracoes e Modelos", usando relacoes one-to-many e belongsTo:
+- User possui muitas Recipes, Comments, Reports, UserActivities, RecipeViews, LoginSessions
+- Recipe pertence a User e possui muitos Comments, RecipeViews e UserActivities
+- Comment pertence a User e Recipe e possui muitos Reports
+- Report pertence a Comment e User
+- UserActivity pertence a User e opcionalmente a Recipe
+- RecipeView pertence a User e Recipe
+- LoginSession pertence a User
+Estas relacoes garantem consistencia relacional e permitem consultas expressivas via Eloquent.
+
+3. Fillable e casts
+Foram definidos campos fillable para permitir mass assignment seguro nos modelos. Tambem foram definidos casts para datas e duracoes em RecipeView e LoginSession, assegurando conversao automatica de tipos.
+
+4. Factories e Seeders
+Foram criadas factories para todas as entidades, permitindo gerar dados de teste rapidamente. O seeder principal cria:
+- 1 moderador e 1 explorador
+- 10 receitas aprovadas
+- comentarios, reports e registos de atividade/visualizacao/sessoes
+Isto facilita validacao funcional e demonstra a estrutura de dados do sistema.
+
+5. Configuracao de base de dados
+O projeto foi configurado para MySQL conforme exigido no enunciado. Foi criado o ficheiro .env com DB_CONNECTION=mysql e DB_DATABASE=saboreando, alinhando com a base criada via phpMyAdmin.
+
+6. Vistas Blade e rotas
+Com base no documento "Laravel Vistas e Componentes" e nos wireframes iniciais (Secao 3.2.3), foram implementadas as vistas:
+- Entrar (login)
+- Registar-se (register)
+- Nova Palavra-Passe (password)
+As vistas ocupam 100% da largura/altura, sao responsivas e centralizadas, e usam um layout comum com componente de marca "Saboreando". As rotas foram criadas com Route::view conforme o documento de rotas, e a rota raiz (/) aponta para a tela de login.
+
+6.1 Vistas dos casos de uso 1 a 5 (sem analise)
+Com base nos wireframes das secoes 3.2.4 a 3.2.7, foram implementadas as paginas principais:
+- Home do Explorador
+- Minhas Receitas
+- Criar Receita
+- Detalhes da Receita
+- Resultados de Pesquisa
+- Home do Moderador
+- Receitas Pendentes
+- Comentarios Denunciados
+Foi criado um layout comum para estas paginas com cabecalho, logo e estilos consistentes. A barra de pesquisa no topo foi removida apenas da home do explorador, pois ja existe pesquisa no hero, evitando duplicacao funcional e visual.
+
+6.2 Rotas/URLs para teste das paginas
+- / (login)
+- /entrar
+- /registar
+- /nova-palavra-passe
+- /home
+- /minhas-receitas
+- /receitas/criar
+- /receitas/detalhes
+- /pesquisa
+- /moderador
+- /moderador/pendentes
+- /moderador/comentarios-denunciados
+
+7. Justificacao das decisoes
+- A separacao clara entre dados operacionais e dados analiticos permite escalabilidade e analise de uso sem comprometer a performance do dominio principal.
+- O uso de relacoes Eloquent melhora a legibilidade e facilita consultas com menor codigo.
+- Factories e seeders suportam testes e demonstracoes consistentes.
+- As vistas seguem os wireframes fornecidos, mantendo consistencia visual e de navegacao.
+
+Conclusao
+O trabalho realizado estabelece uma base solida para o desenvolvimento do sistema Saboreando, cobrindo a modelacao de dados, integridade relacional, preparacao para analises e implementacao das vistas iniciais. Esta estrutura facilita a continuidade do projeto e a implementacao dos restantes casos de uso.
