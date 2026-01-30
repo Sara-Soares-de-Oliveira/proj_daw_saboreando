@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Explorer\ReportController as ExplorerReportControll
 use App\Http\Controllers\Api\Moderator\RecipeController as ModeratorRecipeController;
 use App\Http\Controllers\Api\Moderator\CommentController as ModeratorCommentController;
 use App\Http\Controllers\Api\Moderator\ReportController as ModeratorReportController;
+use App\Http\Controllers\Api\RecipeViewController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -28,6 +29,10 @@ Route::middleware(['auth:sanctum', 'role:explorador'])->prefix('explorador')->gr
 Route::get('/recipes', [\App\Http\Controllers\Api\PublicRecipeController::class, 'index']);
 Route::get('/recipes/{recipe}', [\App\Http\Controllers\Api\PublicRecipeController::class, 'show']);
 Route::get('/recipes/{recipe}/comments', [\App\Http\Controllers\Api\PublicCommentController::class, 'index']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/recipes/{recipe}/view-start', [RecipeViewController::class, 'start']);
+    Route::patch('/recipes/{recipe}/view-end', [RecipeViewController::class, 'end']);
+});
 
 Route::middleware(['auth:sanctum', 'role:moderador'])->prefix('moderador')->group(function () {
     Route::get('/recipes', [ModeratorRecipeController::class, 'index']);

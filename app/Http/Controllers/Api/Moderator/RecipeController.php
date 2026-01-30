@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Moderator;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RecipeResource;
 use App\Models\Recipe;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 
 class RecipeController extends Controller
@@ -25,9 +26,15 @@ class RecipeController extends Controller
         return RecipeResource::collection($recipes);
     }
 
-    public function approve(Recipe $recipe)
+    public function approve(Request $request, Recipe $recipe)
     {
         $recipe->update(['estado' => 'aprovado']);
+
+        UserActivity::create([
+            'user_id' => $request->user()->id,
+            'recipe_id' => $recipe->id,
+            'action_type' => 'recipe_approved',
+        ]);
 
         return new RecipeResource($recipe);
     }
@@ -35,6 +42,12 @@ class RecipeController extends Controller
     public function reject(Request $request, Recipe $recipe)
     {
         $recipe->update(['estado' => 'rejeitado']);
+
+        UserActivity::create([
+            'user_id' => $request->user()->id,
+            'recipe_id' => $recipe->id,
+            'action_type' => 'recipe_rejected',
+        ]);
 
         return new RecipeResource($recipe);
     }

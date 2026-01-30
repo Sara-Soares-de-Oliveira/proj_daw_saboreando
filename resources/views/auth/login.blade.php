@@ -13,11 +13,6 @@
             <label for="password">Palavra-passe</label>
             <input id="password" name="password" type="password" placeholder="Digite a sua palavra-passe" />
 
-            <div class="row" style="margin-bottom: 10px;">
-                <button type="button" class="btn btn-ghost wide">Explorador de Sabores</button>
-                <button type="button" class="btn btn-ghost wide">Moderador</button>
-            </div>
-
             <div class="row">
                 <button type="submit" class="btn btn-primary wide">Entrar</button>
             </div>

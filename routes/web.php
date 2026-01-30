@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\SearchController;
 use App\Http\Controllers\Web\ModeratorController;
 use App\Http\Controllers\Web\CommentController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\MetricsController;
 
 Route::get('/', [AuthController::class, 'showLogin']);
 
@@ -29,6 +30,7 @@ Route::get('/receitas/{recipe}', [RecipeController::class, 'show'])->name('recip
 Route::get('/pesquisa', [SearchController::class, 'results'])->name('search.results');
 Route::post('/receitas/{recipe}/comentarios', [CommentController::class, 'store'])->middleware(['web.auth', 'web.role:explorador'])->name('comments.store');
 Route::post('/comentarios/{comment}/denunciar', [ReportController::class, 'store'])->middleware(['web.auth', 'web.role:explorador'])->name('reports.store');
+Route::get('/metricas', [MetricsController::class, 'explorador'])->middleware(['web.auth', 'web.role:explorador'])->name('metrics.explorador');
 
 Route::get('/moderador', [ModeratorController::class, 'home'])->middleware(['web.auth', 'web.role:moderador'])->name('moderator.home');
 Route::get('/moderador/pendentes', [ModeratorController::class, 'pending'])->middleware(['web.auth', 'web.role:moderador'])->name('moderator.pending');
@@ -37,3 +39,4 @@ Route::patch('/moderador/receitas/{recipe}/aprovar', [ModeratorController::class
 Route::patch('/moderador/receitas/{recipe}/rejeitar', [ModeratorController::class, 'reject'])->middleware(['web.auth', 'web.role:moderador'])->name('moderator.recipes.reject');
 Route::patch('/moderador/comentarios/{comment}/manter', [ModeratorController::class, 'keepComment'])->middleware(['web.auth', 'web.role:moderador'])->name('moderator.comments.keep');
 Route::patch('/moderador/comentarios/{comment}/remover', [ModeratorController::class, 'removeComment'])->middleware(['web.auth', 'web.role:moderador'])->name('moderator.comments.remove');
+Route::get('/moderador/metricas', [MetricsController::class, 'moderador'])->middleware(['web.auth', 'web.role:moderador'])->name('metrics.moderador');

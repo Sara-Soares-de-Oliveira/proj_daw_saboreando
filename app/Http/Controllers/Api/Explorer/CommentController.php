@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Recipe;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -25,6 +26,12 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
             'conteudo' => $validated['conteudo'],
             'estado' => 'ativo',
+        ]);
+
+        UserActivity::create([
+            'user_id' => $request->user()->id,
+            'recipe_id' => $recipe->id,
+            'action_type' => 'comment_created',
         ]);
 
         return (new CommentResource($comment))
