@@ -13,6 +13,12 @@ class ModeratorController extends Controller
     {
         $response = InternalApi::request('GET', '/api/recipes');
         $recipes = $response['ok'] ? ($response['json']['data'] ?? []) : [];
+        $recipes = array_map(function ($recipe) {
+            if (!empty($recipe['foto'])) {
+                $recipe['foto_url'] = url('storage/'.$recipe['foto']);
+            }
+            return $recipe;
+        }, $recipes);
 
         $token = request()->session()->get('api_token');
         $metricsResponse = InternalApi::request('GET', '/api/metrics/moderador', ['period' => 'day'], $token);
@@ -71,7 +77,7 @@ class ModeratorController extends Controller
         $token = $request->session()->get('api_token');
         InternalApi::request('PATCH', "/api/moderador/recipes/{$recipe}/approve", [], $token);
 
-        return back();
+        return back()->with('success', 'Receita aprovada com sucesso.');
     }
 
     public function reject(Request $request, int $recipe)
@@ -79,7 +85,7 @@ class ModeratorController extends Controller
         $token = $request->session()->get('api_token');
         InternalApi::request('PATCH', "/api/moderador/recipes/{$recipe}/reject", [], $token);
 
-        return back();
+        return back()->with('success', 'Receita rejeitada com sucesso.');
     }
 
     public function keepComment(Request $request, int $comment)
@@ -91,7 +97,7 @@ class ModeratorController extends Controller
             return back()->withErrors(['comment' => $message]);
         }
 
-        return back();
+        return back()->with('success', 'Comentário mantido com sucesso.');
     }
 
     public function removeComment(Request $request, int $comment)
@@ -103,6 +109,6 @@ class ModeratorController extends Controller
             return back()->withErrors(['comment' => $message]);
         }
 
-        return back();
+        return back()->with('success', 'Comentário removido com sucesso.');
     }
 }

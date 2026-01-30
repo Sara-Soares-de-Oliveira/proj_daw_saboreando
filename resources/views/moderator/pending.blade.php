@@ -41,12 +41,12 @@
                         <div style="font-size:13px; white-space:pre-line;">{{ $recipe['modo_preparo'] ?? '' }}</div>
 
                         <div class="row" style="margin-top:12px;">
-                            <form method="post" action="{{ route('moderator.recipes.approve', $recipe['id']) }}">
+                            <form method="post" action="{{ route('moderator.recipes.approve', $recipe['id']) }}" data-confirm-title="Aprovar receita" data-confirm-message="Tem certeza que deseja aprovar esta receita?">
                                 @csrf
                                 @method('PATCH')
                                 <button class="btn btn-primary">Sim</button>
                             </form>
-                            <form method="post" action="{{ route('moderator.recipes.reject', $recipe['id']) }}">
+                            <form method="post" action="{{ route('moderator.recipes.reject', $recipe['id']) }}" data-confirm-title="Rejeitar receita" data-confirm-message="Tem certeza que deseja rejeitar esta receita?">
                                 @csrf
                                 @method('PATCH')
                                 <button class="btn" style="background:#111; color:#fff;">Nao</button>

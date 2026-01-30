@@ -10,7 +10,7 @@ use App\Http\Controllers\Web\CommentController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\MetricsController;
 
-Route::get('/', [AuthController::class, 'showLogin']);
+Route::get('/', [HomeController::class, 'index'])->name('home.public');
 
 Route::get('/entrar', [AuthController::class, 'showLogin'])->name('auth.login');
 Route::post('/entrar', [AuthController::class, 'login'])->name('auth.login.submit');
@@ -19,7 +19,7 @@ Route::post('/registar', [AuthController::class, 'register'])->name('auth.regist
 Route::get('/nova-palavra-passe', [AuthController::class, 'showPassword'])->name('auth.password');
 Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-Route::get('/home', [HomeController::class, 'index'])->middleware(['web.auth', 'web.role:explorador'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/minhas-receitas', [RecipeController::class, 'index'])->middleware(['web.auth', 'web.role:explorador'])->name('recipes.index');
 Route::get('/receitas/criar', [RecipeController::class, 'create'])->middleware(['web.auth', 'web.role:explorador'])->name('recipes.create');
 Route::post('/receitas', [RecipeController::class, 'store'])->middleware(['web.auth', 'web.role:explorador'])->name('recipes.store');

@@ -21,6 +21,6 @@ class ReportController extends Controller
             return back()->withErrors(['motivo' => 'Não foi possível denunciar o comentário.']);
         }
 
-        return back();
+        return back()->with('success', 'Denuncia feita com sucesso.');
     }
 }

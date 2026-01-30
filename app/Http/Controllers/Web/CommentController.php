@@ -22,6 +22,6 @@ class CommentController extends Controller
             return back()->withErrors(['conteudo' => $message]);
         }
 
-        return back();
+        return back()->with('success', 'Comentario feito com sucesso.');
     }
 }
