@@ -13,6 +13,12 @@ class SearchController extends Controller
         $term = (string) $request->query('q', '');
         $response = InternalApi::request('GET', '/api/recipes');
         $recipes = $response['ok'] ? ($response['json']['data'] ?? []) : [];
+        $recipes = array_map(function ($recipe) {
+            if (!empty($recipe['foto'])) {
+                $recipe['foto_url'] = url('storage/'.$recipe['foto']);
+            }
+            return $recipe;
+        }, $recipes);
 
         if ($term !== '') {
             $recipes = array_values(array_filter($recipes, function ($recipe) use ($term) {

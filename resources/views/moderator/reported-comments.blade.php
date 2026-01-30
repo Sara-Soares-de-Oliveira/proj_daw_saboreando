@@ -26,14 +26,19 @@
                             <div>
                                 <strong>{{ $report['reporter']['name'] ?? 'Utilizador' }}</strong><br />
                                 <small>{{ $report['motivo'] ?? '' }}</small>
+                                @if(!empty($report['comment']['conteudo']))
+                                    <div style="margin-top:8px; font-size:13px; color:var(--muted);">
+                                        "{{ $report['comment']['conteudo'] }}"
+                                    </div>
+                                @endif
                             </div>
                             <div class="row">
-                                <form method="post" action="{{ route('moderator.comments.keep', $report['comment_id']) }}">
+                                <form method="post" action="{{ route('moderator.comments.keep', $report['comment_id']) }}" data-confirm-title="Manter comentário" data-confirm-message="Tem certeza que deseja manter este comentário?">
                                     @csrf
                                     @method('PATCH')
                                     <button class="btn btn-primary">Manter</button>
                                 </form>
-                                <form method="post" action="{{ route('moderator.comments.remove', $report['comment_id']) }}">
+                                <form method="post" action="{{ route('moderator.comments.remove', $report['comment_id']) }}" data-confirm-title="Remover comentário" data-confirm-message="Tem certeza que deseja remover este comentário?">
                                     @csrf
                                     @method('PATCH')
                                     <button class="btn" style="background:#111; color:#fff;">Excluir</button>
