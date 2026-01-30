@@ -14,6 +14,11 @@
 
     <section class="section">
         <div class="wrap">
+            @if($errors->has('comment'))
+                <div class="panel" style="background:#fff3f3; border-color:#f2c7c7; color:#b42318; margin-bottom:12px;">
+                    {{ $errors->first('comment') }}
+                </div>
+            @endif
             <div class="list">
                 @forelse($reports as $report)
                     <div class="panel">

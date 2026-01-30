@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Explorer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RecipeResource;
 use App\Models\Recipe;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 
 class RecipeController extends Controller
@@ -24,16 +25,42 @@ class RecipeController extends Controller
         $validated = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['required', 'string'],
-            'ingredientes' => ['required', 'string'],
-            'modo_preparo' => ['required', 'string'],
+            'ingredientes' => ['required'],
+            'ingredientes.*' => ['nullable', 'string', 'max:255'],
+            'modo_preparo' => ['required'],
+            'modo_preparo.*' => ['nullable', 'string', 'max:255'],
             'dificuldade' => ['required', 'in:facil,medio,dificil'],
             'foto' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $ingredientes = $validated['ingredientes'];
+        if (is_array($ingredientes)) {
+            $ingredientes = implode("\n", array_filter(array_map('trim', $ingredientes)));
+        } else {
+            $ingredientes = trim((string) $ingredientes);
+        }
+        $modoPreparo = $validated['modo_preparo'];
+        if (is_array($modoPreparo)) {
+            $modoPreparo = implode("\n", array_filter(array_map('trim', $modoPreparo)));
+        } else {
+            $modoPreparo = trim((string) $modoPreparo);
+        }
+        if ($ingredientes === '' || $modoPreparo === '') {
+            return response()->json(['message' => 'Ingredientes e modo de preparo sao obrigatorios.'], 422);
+        }
+
         $recipe = Recipe::create([
             ...$validated,
+            'ingredientes' => $ingredientes,
+            'modo_preparo' => $modoPreparo,
             'user_id' => $request->user()->id,
             'estado' => 'pendente',
+        ]);
+
+        UserActivity::create([
+            'user_id' => $request->user()->id,
+            'recipe_id' => $recipe->id,
+            'action_type' => 'recipe_created',
         ]);
 
         return (new RecipeResource($recipe))
@@ -50,13 +77,35 @@ class RecipeController extends Controller
         $validated = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
             'descricao' => ['required', 'string'],
-            'ingredientes' => ['required', 'string'],
-            'modo_preparo' => ['required', 'string'],
+            'ingredientes' => ['required'],
+            'ingredientes.*' => ['nullable', 'string', 'max:255'],
+            'modo_preparo' => ['required'],
+            'modo_preparo.*' => ['nullable', 'string', 'max:255'],
             'dificuldade' => ['required', 'in:facil,medio,dificil'],
             'foto' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $recipe->update($validated);
+        $ingredientes = $validated['ingredientes'];
+        if (is_array($ingredientes)) {
+            $ingredientes = implode("\n", array_filter(array_map('trim', $ingredientes)));
+        } else {
+            $ingredientes = trim((string) $ingredientes);
+        }
+        $modoPreparo = $validated['modo_preparo'];
+        if (is_array($modoPreparo)) {
+            $modoPreparo = implode("\n", array_filter(array_map('trim', $modoPreparo)));
+        } else {
+            $modoPreparo = trim((string) $modoPreparo);
+        }
+        if ($ingredientes === '' || $modoPreparo === '') {
+            return response()->json(['message' => 'Ingredientes e modo de preparo sao obrigatorios.'], 422);
+        }
+
+        $recipe->update([
+            ...$validated,
+            'ingredientes' => $ingredientes,
+            'modo_preparo' => $modoPreparo,
+        ]);
 
         return new RecipeResource($recipe);
     }

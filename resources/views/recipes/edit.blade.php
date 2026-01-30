@@ -26,7 +26,8 @@
                         </div>
                         <div>
                             <label>Imagem da Receita</label>
-                            <input name="foto_file" type="file" accept="image/*" />
+                            <input id="foto_file" name="foto_file" type="file" accept="image/*" />
+                            <img id="foto_preview" alt="Preview da receita" style="margin-top:10px; width:100%; max-height:220px; object-fit:cover; border-radius:8px; display:none;" />
                         </div>
                         <div>
                             <label>Descricao</label>
@@ -34,11 +35,39 @@
                         </div>
                         <div>
                             <label>Ingredientes</label>
-                            <textarea name="ingredientes">{{ $recipe['ingredientes'] }}</textarea>
+                            @php
+                                $ingredientes = array_filter(explode("\n", (string) ($recipe['ingredientes'] ?? '')));
+                                if (count($ingredientes) === 0) {
+                                    $ingredientes = [''];
+                                }
+                            @endphp
+                            <div id="ingredientes-list" style="display:grid; gap:8px;">
+                                @foreach($ingredientes as $item)
+                                    <input name="ingredientes[]" type="text" value="{{ trim($item) }}" placeholder="Ex: 2 ovos" />
+                                @endforeach
+                            </div>
+                            <div class="row" style="margin-top:8px; gap:8px;">
+                                <button type="button" id="add-ingrediente" style="border:0; background:transparent; color:var(--muted); font-size:12px;">+ adicionar</button>
+                                <button type="button" id="remove-ingrediente" style="border:0; background:transparent; color:var(--muted); font-size:12px;">- remover</button>
+                            </div>
                         </div>
                         <div>
                             <label>Modo de Preparo</label>
-                            <textarea name="modo_preparo">{{ $recipe['modo_preparo'] }}</textarea>
+                            @php
+                                $preparo = array_filter(explode("\n", (string) ($recipe['modo_preparo'] ?? '')));
+                                if (count($preparo) === 0) {
+                                    $preparo = [''];
+                                }
+                            @endphp
+                            <div id="preparo-list" style="display:grid; gap:8px;">
+                                @foreach($preparo as $item)
+                                    <input name="modo_preparo[]" type="text" value="{{ trim($item) }}" placeholder="Ex: Misturar os ingredientes" />
+                                @endforeach
+                            </div>
+                            <div class="row" style="margin-top:8px; gap:8px;">
+                                <button type="button" id="add-preparo" style="border:0; background:transparent; color:var(--muted); font-size:12px;">+ adicionar</button>
+                                <button type="button" id="remove-preparo" style="border:0; background:transparent; color:var(--muted); font-size:12px;">- remover</button>
+                            </div>
                         </div>
                         <div>
                             <label>Nivel de Dificuldade</label>
@@ -57,4 +86,80 @@
             </div>
         </div>
     </section>
+    <script>
+        (function () {
+            var input = document.getElementById('foto_file');
+            var preview = document.getElementById('foto_preview');
+            if (!input || !preview) {
+                return;
+            }
+            var current = "{{ $recipe['foto'] ?? '' }}";
+            if (current) {
+                preview.src = "/storage/" + current;
+                preview.style.display = 'block';
+            }
+            input.addEventListener('change', function () {
+                var file = input.files && input.files[0];
+                if (!file) {
+                    if (current) {
+                        preview.src = "/storage/" + current;
+                        preview.style.display = 'block';
+                    } else {
+                        preview.style.display = 'none';
+                        preview.removeAttribute('src');
+                    }
+                    return;
+                }
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            });
+        })();
+        (function () {
+            function addField(listId, name, placeholder) {
+                var list = document.getElementById(listId);
+                if (!list) {
+                    return;
+                }
+                var input = document.createElement('input');
+                input.name = name;
+                input.type = 'text';
+                input.placeholder = placeholder;
+                list.appendChild(input);
+            }
+            function removeField(listId) {
+                var list = document.getElementById(listId);
+                if (!list) {
+                    return;
+                }
+                if (list.children.length > 1) {
+                    list.removeChild(list.lastElementChild);
+                }
+            }
+            var addIng = document.getElementById('add-ingrediente');
+            var remIng = document.getElementById('remove-ingrediente');
+            var addPrep = document.getElementById('add-preparo');
+            var remPrep = document.getElementById('remove-preparo');
+
+            if (addIng) {
+                addIng.addEventListener('click', function () {
+                    addField('ingredientes-list', 'ingredientes[]', 'Ex: 1 colher de sal');
+                });
+            }
+            if (remIng) {
+                remIng.addEventListener('click', function () {
+                    removeField('ingredientes-list');
+                });
+            }
+            if (addPrep) {
+                addPrep.addEventListener('click', function () {
+                    addField('preparo-list', 'modo_preparo[]', 'Ex: Levar ao forno por 20 min');
+                });
+            }
+            if (remPrep) {
+                remPrep.addEventListener('click', function () {
+                    removeField('preparo-list');
+                });
+            }
+        })();
+    </script>
 @endsection

@@ -1,0 +1,194 @@
+﻿RELATORIO DE METRICAS - SABOREANDO
+=================================
+
+1. Introducao
+-------------
+O presente relatorio descreve a implementacao do modulo de metricas da plataforma Saboreando. O objetivo principal e recolher dados reais de utilizacao, disponibilizar indicadores interpretaveis e permitir a visualizacao das metricas tanto para o utilizador comum (Explorador de Sabores) como para o Moderador. O trabalho segue o enunciado da UC e as recomendacoes de usabilidade referidas no documento de sugestoes.
+
+2. Objetivos das metricas
+-------------------------
+- Recolher dados reais de uso do sistema.
+- Diferenciar visao pessoal (explorador) e visao global (moderador).
+- Fornecer indicadores claros e interpretaveis.
+- Suportar a analise por periodo (dia/semana/mes/ano) e por intervalo de datas.
+- Permitir um resumo rapido (preview) e uma pagina detalhada (progressive disclosure).
+
+3. Estrutura de dados (BD)
+--------------------------
+As tabelas ja existentes na base de dados suportam a recolha e analise das metricas:
+- login_sessions: registo de sessoes de utilizador (login_at, logout_at, duration_seconds).
+- recipe_views: registo de visualizacoes de receitas (view_start, view_end, duration_seconds).
+- user_activities: registo de acoes relevantes (criar receita, comentar, denunciar, aprovar/rejeitar, etc.).
+- recipes, comments, reports: tabelas principais que permitem contagens e analises complementares.
+
+4. Recolha de dados (Fase A)
+----------------------------
+Foram implementados pontos de recolha automatica:
+
+4.1 Sessoes (login/logout)
+- Ao efetuar login, cria-se um registo em login_sessions com login_at.
+- Ao efetuar logout, a sessao e encerrada, e calculada a duracao.
+
+4.2 Visualizacao de receitas
+- Ao abrir uma receita, cria-se um registo em recipe_views com view_start.
+- Ao sair ou abrir outra receita, a visualizacao e encerrada com view_end e duration_seconds.
+
+4.3 Acoes (user_activities)
+- Criar receita -> action_type = recipe_created
+- Comentar -> action_type = comment_created
+- Denunciar -> action_type = report_created
+- Aprovar receita -> action_type = recipe_approved
+- Rejeitar receita -> action_type = recipe_rejected
+- Manter comentario -> action_type = comment_kept
+- Remover comentario -> action_type = comment_removed
+
+5. Metricas e filtros (Fase B)
+------------------------------
+Os endpoints de metricas foram alargados para suportar:
+- Filtro por periodo: ?period=day|week|month|year
+- Filtro por datas: ?from=YYYY-MM-DD&to=YYYY-MM-DD
+
+5.1 Explorador (API)
+Endpoint: GET /api/metrics/explorador
+Principais indicadores devolvidos:
+- period_time_seconds (tempo no periodo, calculado por login_at/logout_at)
+- total_time_seconds (tempo total acumulado)
+- period_sessions, period_active_days
+- period_views, period_avg_view_seconds (calculado por view_start/view_end)
+- period_interactions (comentarios + denuncias)
+- receitas criadas (total), receitas aprovadas
+- top_approved_recipes: ranking de receitas aprovadas do utilizador, ordenadas por visualizacoes
+
+5.2 Moderador (API)
+Endpoint: GET /api/metrics/moderador
+Principais indicadores devolvidos:
+- period_active_users (exclui moderadores)
+- period_users_creators (exploradores que criaram receitas)
+- period_users_interactors (exploradores que comentaram/denunciaram)
+- period_users_viewers_only (so visualizaram receitas)
+- period_logins
+- period_recipes_created (exploradores)
+- period_recipes_approved / period_recipes_rejected
+- period_comments_created (exploradores)
+- period_reports_created (exploradores)
+- period_comments_removed / period_comments_kept
+- period_peak_hours (picos por hora)
+- period_daily_activity (evolucao por dia)
+- period_user_participation (participacao por tipo de acao)
+- receitas pendentes/aprovadas/rejeitadas
+- comentarios removidos (total)
+
+6. Visualizacao e UX (Fase C)
+------------------------------
+Para cumprir o principio de progressive disclosure:
+
+6.1 Preview para Explorador
+- Local: pagina "Minhas Receitas"
+- Indicadores:
+  - Receitas criadas (total)
+  - Receitas aprovadas
+  - Popularidade das receitas (visualizacoes totais das receitas aprovadas)
+- Botao para pagina de metricas detalhadas
+
+6.2 Pagina de metricas detalhadas (Explorador)
+- Local: /metricas
+- Conteudo:
+  - Tempo total na plataforma
+  - Receitas criadas (total)
+  - Receitas aprovadas
+  - Consumo (visualizacoes do periodo, tempo medio por receita)
+  - Comentarios feitos vs recebidos
+- Grafico de barras: ranking das receitas aprovadas mais vistas
+
+6.3 Preview para Moderador
+- Local: pagina inicial do moderador
+- Indicadores:
+  - Utilizadores ativos (do dia, moderador nao conta)
+  - Receitas submetidas (do dia)
+  - Denuncias (do dia)
+- Botao para pagina de metricas detalhadas
+
+6.4 Pagina de metricas detalhadas (Moderador)
+- Local: /moderador/metricas
+- Filtros por periodo (dia/semana/mes/ano)
+- Graficos:
+  - Participacao de utilizadores (criadores vs interagem vs so visualizam)
+  - Receitas aprovadas vs rejeitadas
+  - Comentarios removidos vs mantidos
+  - Picos por hora (logins + receitas + denuncias)
+- Indicadores de estado do sistema:
+  - Receitas pendentes/aprovadas/removidas
+  - Comentarios removidos
+
+6.5 Ajustes de interface adicionais
+- Home do explorador: listagens com scroll horizontal:
+  - "Nao Saem da Boca da Malta": top 20 por interacoes (comentarios + views).
+  - "Acabadas de Sair do Forno": ultimas 10 receitas aprovadas.
+- Imagens: fotos aparecem no home, nas receitas do explorador e nas pendentes do moderador.
+- Login: removidos botoes de escolha de perfil (a API identifica o role).
+- Receitas pendentes (moderador): paginacao 5 por pagina e cards com scroll vertical interno.
+- Comentarios denunciados: botoes de manter/remover corrigidos.
+
+7. Endpoints relevantes
+------------------------
+Autenticacao:
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/logout
+
+Explorador:
+- POST /api/explorador/recipes
+- POST /api/explorador/recipes/{id}/comments
+- POST /api/explorador/comments/{id}/reports
+
+Moderador:
+- PATCH /api/moderador/recipes/{id}/approve
+- PATCH /api/moderador/recipes/{id}/reject
+- PATCH /api/moderador/comments/{id}/keep
+- PATCH /api/moderador/comments/{id}/remove
+
+Publico:
+- GET /api/recipes
+- GET /api/recipes/{id}
+- GET /api/recipes/{id}/comments
+
+Metricas:
+- GET /api/metrics/explorador
+- GET /api/metrics/moderador
+
+Visualizacoes:
+- POST /api/recipes/{id}/view-start
+- PATCH /api/recipes/{id}/view-end
+
+8. Testes principais
+--------------------
+- Criar utilizador explorador, efetuar login e obter token.
+- Criar receita (fica pendente).
+- Moderador aprova receita.
+- Abrir receita aprovada para gerar visualizacoes.
+- Comentar e denunciar para gerar interacoes.
+- Consultar /metricas (explorador) e /moderador/metricas (moderador).
+
+9. Melhorias recentes implementadas
+-----------------------------------
+- Correcoes de tempo: calculo de sessoes e visualizacoes passou a usar login_at/logout_at e view_start/view_end (evita valores negativos e zero).
+- Imagens:
+  - Ativacao do link publico (storage:link).
+  - URL das imagens usa host atual (resolve localhost vs 127.0.0.1).
+  - Preview de imagem no criar/editar receita.
+- Criacao/edicao de receitas:
+  - Ingredientes e modo de preparo em campos dinamicos (adicionar/remover).
+  - Conversao de arrays para texto com linhas no backend.
+  - Ao editar, a receita volta a estado "pendente".
+- Listagens:
+  - "Minhas Receitas": cards simplificados com foto + titulo e link discreto para editar.
+  - Moderador (pendentes): cards com detalhes completos e scroll interno.
+- Metricas:
+  - Moderador com novos indicadores de participacao e conteudo/moderacao.
+  - Graficos adicionados na pagina detalhada do moderador.
+  - Periodo "ano" disponivel no filtro.
+
+10. Conclusao
+-------------
+O modulo de metricas esta implementado de forma funcional, com recolha de dados reais, filtros temporais e apresentacao visual. O sistema cumpre os requisitos do enunciado e do feedback do docente, com diferenciacao clara entre explorador e moderador, e com suporte para analises detalhadas e navegacao intuitiva.
+

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ReportResource;
 use App\Models\Comment;
 use App\Models\Report;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -24,6 +25,12 @@ class ReportController extends Controller
             'comment_id' => $comment->id,
             'user_id' => $request->user()->id,
             'motivo' => $validated['motivo'],
+        ]);
+
+        UserActivity::create([
+            'user_id' => $request->user()->id,
+            'recipe_id' => $comment->recipe_id,
+            'action_type' => 'report_created',
         ]);
 
         return (new ReportResource($report))
